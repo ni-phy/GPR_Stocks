@@ -8,6 +8,9 @@ import sklearn as sk
 from sklearn import gaussian_process as gp
 from sklearn.gaussian_process.kernels import DotProduct, RBF, WhiteKernel
 
+def trailing_avg(arr):
+    return sum(arr)/len(arr)
+
 start_date = '2021-01-01'
 end_date = '2025-01-31'
 index = 'AAPL'  # Example stock symbol, change as needed
@@ -16,8 +19,10 @@ stock = yf.download(index, start=start_date, end=end_date)
 
 data = pd.DataFrame.to_numpy(stock['Close'])
 data = data-data[0]
-sparse_data = data[:800:20]  # Downsample the data
-sparse_days = np.atleast_2d(np.arange(len(data))[:800:20]).T
+
+# Downsample the data, -2 to ensure there is unsampled data for prediction
+sparse_data = [trailing_avg(data[10*(i-1):10*i]) for i in range(1,len(data)//10-2)]  
+sparse_days = np.atleast_2d(np.arange(len(sparse_data))*10).T
 days = np.atleast_2d(np.arange(len(data))).T
 
 # Create the Gaussian Process model
