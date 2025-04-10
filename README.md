@@ -7,6 +7,8 @@ GPRs incorporate uncertainties in the model developement. This can prove a usefu
 
 -Undersample the data (still debating whether to do this)
 
+-Stop undersampled data early (i.e. test predictive accuracy)
+
 -Develop a model using the undersampled data and a white kernel to create the model (project is currently here)
 
 -Get a standard deviation from the averaged data
