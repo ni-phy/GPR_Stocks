@@ -11,7 +11,8 @@ from sklearn.gaussian_process.kernels import DotProduct, RBF, WhiteKernel
 def SMA(arr, n=10):
     """Compute the moving average of an array."""
     res = [sum(arr[i-n:i])/n for i in range(n, len(arr))]
-    return res 
+    std = [np.std(arr[i-n:i]) for i in range(n, len(arr))]
+    return res, std 
 
 def sparse(arr, n=10, s=2):
     """Compute the sparse average of an array."""
@@ -19,12 +20,12 @@ def sparse(arr, n=10, s=2):
     res = []
     avg_ind = []
     for i in range(0, l-s*n, n):
-        res.append(arr[i])
+        res.append(float(arr[i]))
         avg_ind.append(i+n)
     return res, avg_ind
 
 start_date = '2021-01-01'
-end_date = '2025-01-31'
+end_date = '2025-04-10'
 index = 'AAPL'  # Example stock symbol, change as needed
 # Get the stock data
 stock = yf.download(index, start=start_date, end=end_date)
@@ -34,11 +35,12 @@ data = data-data[0]
 days = np.atleast_2d(np.arange(len(data))).T
 
 #find the moving average
-day_avg = 25
-SMA_data = SMA(data, n=day_avg)
+day_avg = 15
+SMA_data, std_data = SMA(data, n=day_avg)
 
 # Downsample the data, s ensures there is unsampled data for prediction
-sparse_data, sparse_days = sparse(SMA_data, n=day_avg, s=1)
+sparse_data, sparse_days = sparse(SMA_data, n=day_avg, s=4)
+sparse_std, _ = sparse(std_data, n=day_avg, s=4)
 sparse_days = np.atleast_2d(sparse_days).T
 
 # Create the Gaussian Process model
@@ -50,10 +52,11 @@ model.fit(sparse_days, sparse_data)
 # Make predictions
 predictions = model.predict(days, return_std=True)
 
+print(np.shape(sparse_data), np.shape(sparse_days))
 # Plot the results
 plt.figure(figsize=(12, 6))
 plt.plot(days, data, 'r.', markersize=10, label='Observed Data')
-plt.plot(sparse_days, sparse_data, 'gx', markersize=10, label='Training Data')
+plt.errorbar(sparse_days, sparse_data,yerr=3*np.array(sparse_std), markersize=10, label='Training Data', fmt='gx')
 plt.plot(days, predictions[0], 'b-', label='GP Mean')
 plt.plot(days[day_avg:], SMA_data, 'g-', label='SMA')
 plt.fill_between(np.arange(len(data)), predictions[0] - 1.96 * predictions[1], predictions[0] + 1.96 * predictions[1], alpha=0.2, color='blue', label='95% Confidence Interval')
