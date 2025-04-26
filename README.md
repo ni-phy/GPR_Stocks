@@ -11,9 +11,9 @@ Summary of the project plan:
 
 -Stop undersampled data early (i.e. test predictive accuracy)
 
--Develop a model using the undersampled data and a white kernel to create the model (project is currently here)
+-Develop a model using the undersampled data and a white kernel to create the model 
 
--Get a standard deviation from the averaged data
+-Get a standard deviation from the averaged data (project is currently here)
 
 -Develop a new model using standard deviation in the training data (might need to switch to tensorflow for this)
 
