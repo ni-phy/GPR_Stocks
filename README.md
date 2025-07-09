@@ -15,6 +15,8 @@ Summary of the project plan:
 
 -Get a standard deviation from the averaged data (project is currently here)
 
+-Develop code to backtest strategy
+
 -Develop a new model using standard deviation in the training data (might need to switch to tensorflow for this)
 
 -Incorporate MCMC for hyperparameters (TBC if necessary)
