@@ -27,7 +27,7 @@ def sparse(arr, n=10, s=2):
 def ml_model(start_date='2021-01-01', end_date='2021-01-01', index = 'SPY'):
     # Get the stock data
     stock = yf.download(index, start=start_date, end=end_date)
-
+    print(start_date, end_date)
     data = pd.DataFrame.to_numpy(stock['Close'])
     data = data-data[0]
     days = np.atleast_2d(np.arange(len(data))).T
@@ -50,3 +50,4 @@ def ml_model(start_date='2021-01-01', end_date='2021-01-01', index = 'SPY'):
     # Make predictions
     predictions = model.predict(days, return_std=True)
     return predictions[0], predictions[1]
+
