@@ -6,7 +6,7 @@ import pandas as pd
 import yfinance as yf
 import sklearn as sk
 from sklearn import gaussian_process as gp
-from sklearn.gaussian_process.kernels import DotProduct, RBF, WhiteKernel
+from sklearn.gaussian_process.kernels import DotProduct, RBF, WhiteKernel, Matern
 
 def SMA(arr, n=10):
     """Compute the moving average of an array."""
@@ -24,7 +24,7 @@ def sparse(arr, n=10, s=2):
         avg_ind.append(i+n)
     return res, avg_ind
 
-def ml_model(start_date='2021-01-01', end_date='2021-01-01', index = 'SPY'):
+def ml_model(start_date='2021-01-01', end_date='2022-01-01', prediction_days = [0,1], index = 'SPY'):
     # Get the stock data
     stock = yf.download(index, start=start_date, end=end_date)
 
@@ -33,7 +33,7 @@ def ml_model(start_date='2021-01-01', end_date='2021-01-01', index = 'SPY'):
     days = np.atleast_2d(np.arange(len(data))).T
 
     #find the moving average
-    day_avg = 15
+    day_avg = 5
     SMA_data, std_data = SMA(data, n=day_avg)
 
     # Downsample the data, s ensures there is unsampled data for prediction
@@ -42,11 +42,14 @@ def ml_model(start_date='2021-01-01', end_date='2021-01-01', index = 'SPY'):
     sparse_days = np.atleast_2d(sparse_days).T
 
     # Create the Gaussian Process model
-    kernel = 0.3*DotProduct()+0.3*RBF(length_scale=1e-2)  + 0.1*WhiteKernel(
-        noise_level=1e-2, noise_level_bounds=(1e-10, 1e1))
+    # kernel = 0.3*DotProduct()+0.3*RBF(length_scale=1e-2)  + 0.1*WhiteKernel(
+    #     noise_level=1e-2, noise_level_bounds=(1e-10, 1e1))
+    lower_bound = np.mean(sparse_std)
+    kernel = 0.3*DotProduct()*(0.3*RBF(length_scale_bounds=(1e-1, 100.0),) + 0.3 * Matern(length_scale=1.0, length_scale_bounds=(1e-1, 100), nu=1.5)) + 0.1*WhiteKernel(
+            noise_level=lower_bound, noise_level_bounds=(lower_bound, 1e1))
     model = gp.GaussianProcessRegressor(kernel=kernel, n_restarts_optimizer=100)
     # Fit the model to the data
     model.fit(sparse_days, sparse_data)
     # Make predictions
-    predictions = model.predict(days, return_std=True)
+    predictions = model.predict(prediction_days, return_std=True)
     return predictions[0], predictions[1]
