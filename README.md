@@ -13,9 +13,9 @@ Summary of the project plan:
 
 -Develop a model using the undersampled data and a white kernel to create the model 
 
--Get a standard deviation from the averaged data (project is currently here)
+-Get a standard deviation from the averaged data
 
--Develop code to backtest strategy
+-Develop code to backtest strategy (currently working on this)
 
 -Develop a new model using standard deviation in the training data (might need to switch to tensorflow for this)
 
